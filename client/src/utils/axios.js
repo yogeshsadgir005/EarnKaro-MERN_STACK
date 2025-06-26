@@ -1,12 +1,12 @@
-// src/axios.js
+// src/utils/axios.js
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://skillmint-backend1-uhjb.onrender.com/api', // ✅ Live backend URL
 });
 
 instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token'); // must match how you store token
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

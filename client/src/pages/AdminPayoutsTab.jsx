@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios'; // ✅ updated to use central axios instance
 
 const AdminPayoutsTab = () => {
   const [users, setUsers] = useState([]);
@@ -7,13 +7,9 @@ const AdminPayoutsTab = () => {
   const [userFilter, setUserFilter] = useState('');
   const [taskFilter, setTaskFilter] = useState('All Tasks');
 
-  const token = localStorage.getItem('token');
-
   const fetchRewards = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get('/admin/users');
       setUsers(res.data);
     } catch (err) {
       console.error('Error fetching rewards:', err);
@@ -22,18 +18,12 @@ const AdminPayoutsTab = () => {
 
   const handleStatusChange = async (userId, rewardIndex, newStatus) => {
     try {
-      await axios.patch(
-        'http://localhost:5000/api/admin/update-task-status',
-        {
-          userId,
-          rewardIndex,
-          newStatus,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setEditing(prev => ({
+      await axios.patch('/admin/update-task-status', {
+        userId,
+        rewardIndex,
+        newStatus,
+      });
+      setEditing((prev) => ({
         ...prev,
         [`${userId}-${rewardIndex}`]: false,
       }));
@@ -47,14 +37,14 @@ const AdminPayoutsTab = () => {
     let filtered = users;
 
     if (userFilter.trim()) {
-      filtered = filtered.filter(user =>
+      filtered = filtered.filter((user) =>
         user._id.trim().includes(userFilter.trim())
       );
     }
 
-    return filtered.flatMap(user =>
+    return filtered.flatMap((user) =>
       user.rewards
-        ?.filter(reward =>
+        ?.filter((reward) =>
           taskFilter === 'All Tasks' ? true : reward.title === taskFilter
         )
         .map((reward, index) => ({
@@ -69,7 +59,7 @@ const AdminPayoutsTab = () => {
   };
 
   const taskNames = Array.from(
-    new Set(users.flatMap(user => user.rewards?.map(r => r.title)))
+    new Set(users.flatMap((user) => user.rewards?.map((r) => r.title)))
   );
 
   const getStatusBadge = (status) => {
@@ -137,10 +127,7 @@ const AdminPayoutsTab = () => {
               const isPending = r.status === 'pending';
 
               return (
-                <tr
-                  key={i}
-                  className="text-center hover:bg-gray-50 transition duration-150"
-                >
+                <tr key={i} className="text-center hover:bg-gray-50 transition duration-150">
                   <td className="py-2 px-4 border">{r.userId}</td>
                   <td className="py-2 px-4 border">{r.title}</td>
                   <td className="py-2 px-4 border font-medium">₹{r.amount}</td>

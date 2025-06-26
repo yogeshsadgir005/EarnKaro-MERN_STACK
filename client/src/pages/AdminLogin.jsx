@@ -1,36 +1,37 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
+import { FaSpinner } from 'react-icons/fa';
 
 const AdminLogin = ({ setIsAdmin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password,
-      });
+    setLoading(true);
 
+    try {
+      const res = await axios.post('/auth/login', { email, password });
       const { token, user } = res.data;
 
       if (!user.isAdmin) {
         alert('Access denied: Not an admin');
+        setLoading(false);
         return;
       }
 
-      // ✅ Save in localStorage and set state
       localStorage.setItem('token', token);
       localStorage.setItem('isAdmin', 'true');
-      setIsAdmin(true); // 🔥 This is what triggers re-render in App.jsx
-
+      setIsAdmin(true);
       navigate('/admin');
     } catch (err) {
       alert('Login failed');
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,8 +55,12 @@ const AdminLogin = ({ setIsAdmin }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded flex justify-center"
+        >
+          {loading ? <FaSpinner className="animate-spin" /> : 'Login'}
         </button>
         <p className="text-sm text-center mt-4">
           Back to{' '}
