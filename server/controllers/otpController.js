@@ -8,7 +8,6 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
-// ✅ 1. Send OTP to email
 exports.sendOtp = async (req, res) => {
   const { email, contact } = req.body;
 
@@ -16,12 +15,11 @@ exports.sendOtp = async (req, res) => {
     return res.status(400).json({ message: "Email is required" });
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
 
   try {
     await Otp.create({ email, contact, otp });
 
-    // ✅ Send real email (Gmail SMTP)
     await sendOtpEmail(email, otp);
 
     res.status(200).json({ message: "OTP sent successfully to your email" });
@@ -32,27 +30,26 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
-// ✅ 2. Verify OTP and create user
 exports.verifyOtpAndSignup = async (req, res) => {
   const { name, email, password, contact, age, referralCode, otp } = req.body;
 
   try {
-    // 1. Check if OTP is valid
+
     const existingOtp = await Otp.findOne({ email, otp });
     if (!existingOtp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // 2. Check if user already exists
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // 3. Hash the password
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Create new user object
+ 
     const newUser = new User({
       name,
       email,
@@ -63,16 +60,15 @@ exports.verifyOtpAndSignup = async (req, res) => {
       points: 0
     });
 
-    // ✅ 5. Handle referral logic
+
     if (referralCode) {
       const referrer = await User.findOne({ referralCode });
       if (referrer) {
-        // Prevent self-referral
+       
         if (referrer.email === newUser.email) {
           return res.status(400).json({ message: "You cannot refer yourself" });
         }
 
-        // 💰 Give referral rewards as objects (not strings!)
         referrer.points += 100;
         referrer.referrals.push(newUser.name);
         referrer.rewards.push({
@@ -91,13 +87,10 @@ exports.verifyOtpAndSignup = async (req, res) => {
       }
     }
 
-    // 6. Save new user to DB
     await newUser.save();
 
-    // 7. Delete the used OTP
     await Otp.deleteOne({ _id: existingOtp._id });
 
-    // 8. Return token and user
     const token = generateToken(newUser._id);
     res.status(201).json({
       message: "Signup successful",

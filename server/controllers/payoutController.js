@@ -7,7 +7,6 @@ exports.submitPayout = async (req, res) => {
   const email = req.user.email || 'user@example.com';
 
   try {
-    // 1. Add Beneficiary Payload
     const benePayload =
       method === 'upi'
         ? {
@@ -26,11 +25,9 @@ exports.submitPayout = async (req, res) => {
             ifsc
           };
 
-    // 2. Add Beneficiary
     const beneResponse = await cashfree.post('/payout/v1/addBeneficiary', benePayload);
     console.log('✅ Beneficiary Added:', beneResponse.data);
 
-    // 3. Request Transfer
     const transfer = await cashfree.post('/payout/v1/requestTransfer', {
       beneId: userId.toString(),
       amount: parseInt(amount),
@@ -41,7 +38,6 @@ exports.submitPayout = async (req, res) => {
 
     console.log('📦 Transfer Response:', transfer.data);
 
-    // 4. Handle Error Status from Cashfree
     if (transfer.data.status === 'ERROR') {
       return res.status(400).json({
         message: '❌ Payout Error',
@@ -51,7 +47,6 @@ exports.submitPayout = async (req, res) => {
       });
     }
 
-    // 5. Save to DB
     await Payout.create({
       user: userId,
       amount,
@@ -61,7 +56,6 @@ exports.submitPayout = async (req, res) => {
       referenceId: transfer.data.referenceId || '',
     });
 
-    // 6. Send Success Response
     res.json({
       message: '✅ Payout Initiated',
       status: transfer.data.status,
@@ -77,7 +71,6 @@ exports.submitPayout = async (req, res) => {
   }
 };
 
-// ✅ Check Payout Status
 exports.checkPayoutStatus = async (req, res) => {
   const { utr } = req.params;
 

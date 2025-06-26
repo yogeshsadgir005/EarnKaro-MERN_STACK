@@ -52,7 +52,7 @@ const Referrals = () => {
       </div>
 
       <div className="bg-black min-h-screen text-white p-6">
-        {/* Back Button */}
+       
         <button
           onClick={() => navigate(-1)}
           className="text-white flex items-center gap-2 mb-6 hover:text-yellow-400"
@@ -62,7 +62,7 @@ const Referrals = () => {
 
         <h2 className="text-2xl font-bold mb-6">Refer & Earn</h2>
 
-        {/* Referral Code */}
+        
         <div className="bg-gray-800 p-4 rounded-xl mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between">
           <div>
             <p className="text-sm text-gray-300 mb-1">Your Referral Code</p>
@@ -76,7 +76,7 @@ const Referrals = () => {
           </button>
         </div>
 
-        {/* Share Buttons */}
+   
         <div className="bg-gray-800 p-4 rounded-xl mb-6">
           <p className="text-sm text-gray-300 mb-3">Share your referral code:</p>
           <div className="flex flex-wrap gap-4">
@@ -105,7 +105,7 @@ const Referrals = () => {
           </div>
         </div>
 
-        {/* Referral Stats */}
+     
         <div className="bg-gray-800 p-4 rounded-xl space-y-4">
           <div>
             <p className="text-sm text-gray-300">Total People Referred</p>

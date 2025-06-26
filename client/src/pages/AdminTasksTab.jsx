@@ -106,7 +106,7 @@ const AdminTasksTab = () => {
             />
           ))}
 
-          {/* Dropdown for Category */}
+    
           <select
             className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
             value={newTask.category}
@@ -118,7 +118,7 @@ const AdminTasksTab = () => {
             <option value="skills">Skills</option>
           </select>
 
-          {/* Reward Input with Placeholder */}
+         
           <input
             type="number"
             className="w-full border border-gray-300 rounded px-4 py-2 text-sm"

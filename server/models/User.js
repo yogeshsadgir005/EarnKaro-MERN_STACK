@@ -6,11 +6,11 @@ const rewardSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'completed','failed'],
-    default: 'completed', // ✅ Default to completed
+    default: 'completed', 
   },
   credited: {
     type: Boolean,
-    default: true, // ✅ Default to true
+    default: true, 
   },
   createdAt: {
     type: Date,

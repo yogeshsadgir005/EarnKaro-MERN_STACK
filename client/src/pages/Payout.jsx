@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import axios from '../utils/axios';
 
 export default function Payout() {
-  const [method, setMethod] = useState('upi'); // 'upi' or 'bank'
+  const [method, setMethod] = useState('upi'); 
   const [amount, setAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [bank, setBank] = useState({ holderName: '', accountNumber: '', ifsc: '' });
@@ -37,25 +37,25 @@ const handleSubmit = async () => {
   setStatus('');
 
   try {
-    // 👇 Step 1: Get user profile to check phone
+
     const profileRes = await axios.get('/user/profile', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
 
     if (!profileRes.data.phone || profileRes.data.phoneVerified !== true) {
-      // 👇 If phone is missing or not verified, redirect to /verify-phone
+    
       navigate('/verify-phone');
       return;
     }
 
-    // 👇 Step 2: Prepare payload
+
     const payload = {
       method,
       amount,
       ...(method === 'upi' ? { upiId } : { bank })
     };
 
-    // 👇 Step 3: Send payout request
+
     const res = await axios.post('/payout', payload, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
@@ -79,7 +79,7 @@ const handleSubmit = async () => {
       <div className="bg-black min-h-screen p-6 flex justify-center items-center">
 
      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-xl w-full max-w-xl">
-          {/* Back Button */}
+      
           <button
             onClick={() => navigate(-1)}
             className="text-white flex items-center gap-2 mb-6 hover:text-yellow-400"
@@ -89,7 +89,7 @@ const handleSubmit = async () => {
 
           <h2 className="text-2xl font-bold mb-6 text-center">💸 Request Payout</h2>
 
-          {/* Method Switch */}
+  
           <div className="flex gap-4 mb-6 justify-center">
             <button
               onClick={() => setMethod('upi')}
@@ -109,7 +109,7 @@ const handleSubmit = async () => {
             </button>
           </div>
 
-          {/* Amount Input */}
+        
           <div className="mb-4">
             <label className="block text-sm text-gray-400 mb-1">Amount (₹)</label>
             <input
@@ -121,7 +121,6 @@ const handleSubmit = async () => {
             />
           </div>
 
-          {/* Dynamic Inputs */}
           {method === 'upi' ? (
             <div className="mb-6">
               <label className="block text-sm text-gray-400 mb-1">UPI ID</label>

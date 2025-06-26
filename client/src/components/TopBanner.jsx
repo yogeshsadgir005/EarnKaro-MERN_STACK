@@ -1,1 +1,0 @@
-// TopBanner component

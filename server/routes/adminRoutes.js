@@ -3,7 +3,6 @@ const router = express.Router();
 const User = require('../models/User');
 const adminProtect = require('../middleware/adminMiddleware');
 
-// 🔐 GET all users
 router.get('/users', adminProtect, async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -13,7 +12,6 @@ router.get('/users', adminProtect, async (req, res) => {
   }
 });
 
-// 🆙 Promote a user to admin (optional helper route)
 router.put('/make-admin/:id', adminProtect, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -40,7 +38,6 @@ router.patch('/update-task-status', adminProtect, async (req, res) => {
     const reward = user.rewards[rewardIndex];
     if (!reward) return res.status(404).json({ message: 'Reward not found at given index' });
 
-    // Check existing credited value
     const wasCredited = reward.credited;
     const amount = reward.amount;
 
@@ -50,7 +47,6 @@ router.patch('/update-task-status', adminProtect, async (req, res) => {
       reward.credited = true;
       user.points += amount;
     } else if (newStatus === 'failed') {
-      // Reset credit if it was previously added
       if (reward.credited) {
         reward.credited = false;
         user.points -= amount;

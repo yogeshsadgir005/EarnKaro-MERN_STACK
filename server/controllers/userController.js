@@ -1,13 +1,13 @@
-// controllers/userController.js
+
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// ✅ Get Logged-in User Profile
+
 const getProfile = async (req, res) => {
   res.json(req.user);
 };
 
-// ✅ Update User Profile
+
 const updateProfile = async (req, res) => {
   const { name, contact, upiId, bank } = req.body;
 
@@ -30,7 +30,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// ✅ Get Rewards
+
 const getRewards = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('rewards');
@@ -52,7 +52,7 @@ const getRewards = async (req, res) => {
   }
 };
 
-// ✅ Get Referrals
+
 const getReferrals = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('referralCode referrals rewards');
@@ -73,7 +73,7 @@ const getReferrals = async (req, res) => {
   }
 };
 
-// ✅ Get Leaderboard
+
 const getLeaderboard = async (req, res) => {
   const range = req.query.range || 'overall';
   let startDate = null;
@@ -126,7 +126,7 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
-// ✅ Export all
+
 module.exports = {
   getProfile,
   updateProfile,

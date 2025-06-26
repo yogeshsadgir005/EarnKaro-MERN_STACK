@@ -19,7 +19,7 @@ export default function Leaderboard() {
 
       const res = await axios.get(`/user/leaderboard?range=${selectedRange}`, { headers });
 
-      // 👇 Just to be safe, filter admins if backend somehow misses it
+   
       const filteredTop = (res.data.top || []).filter((user) => !user.isAdmin);
 
       setTopUsers(filteredTop);
@@ -43,7 +43,7 @@ export default function Leaderboard() {
       </div>
 
       <main className="bg-black text-white min-h-screen p-6 space-y-10">
-        {/* Back Button */}
+       
         <button
           onClick={() => navigate(-1)}
           className="text-white flex items-center gap-2 hover:text-yellow-300 mb-2"
@@ -51,10 +51,10 @@ export default function Leaderboard() {
           <FaArrowLeft /> Back
         </button>
 
-        {/* Title */}
+      
         <h2 className="text-3xl font-bold text-center mb-6">🏆 Leaderboard</h2>
 
-        {/* Toggle Buttons */}
+       
         <div className="flex justify-center mb-6 gap-3 flex-wrap">
           {['monthly', 'weekly', 'overall'].map((r) => (
             <button
@@ -69,7 +69,7 @@ export default function Leaderboard() {
           ))}
         </div>
 
-        {/* Leaderboard List */}
+       
         <div className="bg-gray-900 rounded-xl p-4 space-y-4">
           {loading ? (
             <p className="text-center text-gray-400 animate-pulse">Loading leaderboard...</p>
@@ -103,7 +103,7 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Current User (if outside Top 7 and not admin) */}
+    
         {!loading &&
           currentUser &&
           !currentUser.isAdmin &&

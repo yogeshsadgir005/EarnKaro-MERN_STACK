@@ -10,7 +10,6 @@ router.post('/send-otp', sendOtp);
 router.post('/verify-otp', verifyOtpAndSignup);
 
 
-// 📧 Check if email exists
 router.post('/check-email', async (req, res) => {
   const { email } = req.body;
   try {

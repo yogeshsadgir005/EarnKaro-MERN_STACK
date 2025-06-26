@@ -8,30 +8,30 @@ const {
   completeTask,
   createTask,
   updateTaskStatus,
-  getAllTasks,               // ✅ new
-  toggleTaskField,           // ✅ new
-  deleteTaskById,// ✅ new
+  getAllTasks,              
+  toggleTaskField,           
+  deleteTaskById,
   updateTaskById             
 } = require('../controllers/taskController');
 
 const protect = require('../middleware/authMiddleware');
-const isAdmin = require('../middleware/adminMiddleware'); // ✅ admin check
+const isAdmin = require('../middleware/adminMiddleware'); 
 
-// 📌 Public Routes
-router.get('/', getTasks); // Will return only featured tasks
+
+router.get('/', getTasks); s
 router.get('/slider-tasks', getSliderTasks);
 router.get('/categorized', getCategorizedTasks);
 router.get('/leaderboard', getLeaderboard);
 
-// 🔐 Authenticated User
+
 router.post('/complete', protect, completeTask);
 
-// 🔐 Admin Routes
+
 router.post('/add', protect, isAdmin, createTask);
 router.post('/update-task-status', protect, isAdmin, updateTaskStatus);
-router.get('/all', protect, isAdmin, getAllTasks);                     // ✅ Fetch all tasks
-router.put('/toggle/:taskId', protect, isAdmin, toggleTaskField);     // ✅ Toggle isFeatured/isSlider
-router.delete('/:taskId', protect, isAdmin, deleteTaskById);          // ✅ Delete task by ID
+router.get('/all', protect, isAdmin, getAllTasks);                     
+router.put('/toggle/:taskId', protect, isAdmin, toggleTaskField);     
+router.delete('/:taskId', protect, isAdmin, deleteTaskById);         
 router.put('/update/:taskId', protect, isAdmin, updateTaskById);
 
 module.exports = router;

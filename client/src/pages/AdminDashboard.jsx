@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AdminUsersTab from './AdminUsersTab';
 import AdminPayoutsTab from './AdminPayoutsTab';
-import AdminTasksTab from './AdminTasksTab'; // ✅ import added
+import AdminTasksTab from './AdminTasksTab'; 
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -11,7 +11,7 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
-    window.location.reload(); // Force App.jsx to rerun and remove admin-only routing
+    window.location.reload(); 
   };
 
   return (
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* 🔘 Tab Buttons */}
+ 
       <div className="flex space-x-4 mb-6">
         <button
           onClick={() => setActiveTab('users')}
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
         </button>
       </div>
 
-      {/* 🔽 Render Tabs */}
+    
       {activeTab === 'users' && <AdminUsersTab />}
       {activeTab === 'payouts' && <AdminPayoutsTab />}
       {activeTab === 'tasks' && <AdminTasksTab />}

@@ -24,7 +24,7 @@ const handleSendOtp = async e => {
   setLoading(true);
 
   try {
-    // 1. Check if email already exists
+
     const emailCheck = await axios.post('/auth/check-email', {
       email: formData.email,
     });
@@ -35,7 +35,7 @@ const handleSendOtp = async e => {
       return;
     }
 
-    // 2. If not exists, send OTP
+   
     await axios.post('/auth/send-otp', {
       email: formData.email
     });
@@ -57,12 +57,12 @@ const handleSendOtp = async e => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Top Banner */}
+     
       <div className="bg-yellow-400 text-black text-sm text-center py-2 font-semibold">
         Join a platform where students and graduates find real tasks, land internships, and earn while building valuable skills
       </div>
 
-      {/* Back Button */}
+    
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-blue-400 px-6 mt-4 hover:underline"
@@ -70,7 +70,7 @@ const handleSendOtp = async e => {
         <FaArrowLeft /> Back
       </button>
 
-      {/* Feedback Message */}
+      
       {message.text && (
         <div className={`mx-auto mt-4 max-w-md px-4 py-3 rounded-md text-center text-sm font-medium ${
           message.type === 'success'
@@ -81,7 +81,7 @@ const handleSendOtp = async e => {
         </div>
       )}
 
-      {/* Signup Card */}
+      
       <div className="flex flex-col items-center justify-center flex-1 px-4">
         <div className="bg-[#0a0a0a] border border-blue-500 rounded-xl w-full max-w-md p-6 space-y-5 shadow-lg">
           <h2 className="text-2xl font-semibold text-blue-400 text-center">

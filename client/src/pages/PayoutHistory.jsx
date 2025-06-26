@@ -33,7 +33,7 @@ export default function PayoutHistory() {
       </div>
 
       <main className="bg-black min-h-screen text-white p-6">
-        {/* Back Button */}
+     
         <button
           onClick={() => navigate(-1)}
           className="text-blue-400 flex items-center gap-2 hover:underline text-sm mb-4"

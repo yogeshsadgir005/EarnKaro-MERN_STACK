@@ -105,7 +105,7 @@ export default function Home() {
 <section>
   <h2 className="text-xl sm:text-2xl font-bold mb-4">⭐ Featured Tasks</h2>
 
-  {/* 🔹 Mobile: Horizontal scroll with compact cards */}
+
   <div className="block sm:hidden overflow-x-auto pb-2">
     <div className="flex space-x-3">
       {featuredTasks.length === 0 ? (
@@ -144,7 +144,7 @@ export default function Home() {
     </div>
   </div>
 
-  {/* 🔹 Tablet & Desktop: Full-sized grid */}
+
   <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
     {featuredTasks.length === 0 ? (
       <p className="col-span-full text-gray-400">No featured tasks available.</p>
@@ -183,7 +183,7 @@ export default function Home() {
 </section>
 
 
-        {/* Updates & Streaks */}
+       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section className="bg-gray-900 rounded-lg p-6">
             <h2 className="text-lg sm:text-xl font-bold mb-3">🆕 Latest Updates</h2>

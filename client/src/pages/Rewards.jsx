@@ -49,7 +49,7 @@ export default function Rewards() {
 
         <h2 className="text-3xl font-bold text-center">🎁 My Rewards</h2>
 
-        {/* Summary Cards */}
+        
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-gray-800 rounded-xl p-6 text-center shadow">
             <FaMedal className="text-yellow-400 text-3xl mx-auto mb-2" />
@@ -76,7 +76,7 @@ export default function Rewards() {
           </div>
         </div>
 
-        {/* Reward History Table */}
+      
         <section className="bg-gray-900 rounded-xl p-6">
           <h3 className="text-xl font-bold mb-4">🧾 Reward History</h3>
           {loading ? (

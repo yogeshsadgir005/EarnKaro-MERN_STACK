@@ -25,7 +25,7 @@ export default function Landing() {
       </div>
 
       <main className="bg-black text-white min-h-screen p-6 grid md:grid-cols-2 gap-10 items-center">
-        {/* Left Section - Text */}
+        
         <div>
           <p className="text-blue-400 uppercase text-xs tracking-wide font-semibold mb-2">
             Make your time worth something
@@ -46,7 +46,7 @@ export default function Landing() {
           </Link>
         </div>
 
-        {/* Right Section - Colored Blocks */}
+    
         <div className="grid grid-cols-2 gap-4">
           <div className="rounded-2xl overflow-hidden bg-blue-600 h-36 shadow-md"></div>
           <div className="rounded-2xl overflow-hidden bg-red-500 h-36 shadow-md"></div>

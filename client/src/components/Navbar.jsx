@@ -47,12 +47,12 @@ export default function Navbar() {
 
   return (
     <header className="flex justify-between items-center p-4 bg-black text-white relative">
-      {/* Clickable Brand */}
+   
       <Link to="/home" className="font-bold text-xl">
         Skill<span className="text-blue-500">Mint</span>
       </Link>
 
-      {/* Desktop Nav */}
+
       <nav className="space-x-4 hidden md:flex">
         <Link
           to="/home"
@@ -80,7 +80,7 @@ export default function Navbar() {
         </Link>
       </nav>
 
-      {/* Avatar & Dropdown */}
+   
       <div className="relative" ref={menuRef}>
         {user ? (
           <div>
@@ -104,7 +104,7 @@ export default function Navbar() {
                   👤 Profile
                 </button>
 
-                {/* Mobile-only Links */}
+            
                 <div className="block md:hidden border-t border-gray-200 mt-2">
                   <button
                     onClick={() => {

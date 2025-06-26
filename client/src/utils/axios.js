@@ -1,8 +1,8 @@
-// src/utils/axios.js
+
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: 'https://skillmint-backend1-uhjb.onrender.com/api', // ✅ Live backend URL
+  baseURL: 'https://skillmint-backend1-uhjb.onrender.com/api', 
 });
 
 instance.interceptors.request.use((config) => {

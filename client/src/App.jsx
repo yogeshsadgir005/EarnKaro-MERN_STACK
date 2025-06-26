@@ -23,7 +23,7 @@ import AdminDashboard from './pages/AdminDashboard';
 function App() {
   const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin') === 'true');
 
-  // Update state on localStorage change
+
   useEffect(() => {
     const handleStorageChange = () => {
       setIsAdmin(localStorage.getItem('isAdmin') === 'true');

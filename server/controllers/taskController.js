@@ -23,7 +23,6 @@ exports.getCategorizedTasks = async (req, res) => {
   }
 };
 
-// ✅ When user starts a task → add it with pending status (NO points yet)
 exports.completeTask = async (req, res) => {
   const { taskId } = req.body;
 
@@ -41,16 +40,14 @@ exports.completeTask = async (req, res) => {
       }
 
       if (existingReward.status === 'failed') {
-        // ✅ Allow retry: set it to pending again
         existingReward.status = 'pending';
         existingReward.credited = false;
-        existingReward.createdAt = new Date(); // Optional: update timestamp
+        existingReward.createdAt = new Date(); 
         await user.save();
         return res.status(200).json({ message: 'Retry allowed. Task set to pending again.' });
       }
     }
 
-    // Add new reward as pending (first time)
     user.rewards.push({
       title: task.title,
       amount: task.reward,
@@ -80,7 +77,6 @@ exports.updateTaskStatus = async (req, res) => {
 
     const reward = user.rewards[rewardIndex];
 
-    // Prevent re-crediting already completed tasks
     if (reward.status === 'completed' && reward.credited) {
       return res.status(400).json({ message: 'Already completed and credited' });
     }
@@ -101,7 +97,6 @@ exports.updateTaskStatus = async (req, res) => {
 };
 
 
-// 🔐 Admin-only: Create a new task
 exports.createTask = async (req, res) => {
   try {
     const newTask = await Task.create(req.body);
@@ -114,7 +109,6 @@ exports.createTask = async (req, res) => {
 
 
 
-// 🌟 Get Featured Tasks
 exports.getTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ isFeatured: true });
@@ -124,7 +118,6 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-// 🎞️ Get Slider Tasks
 exports.getSliderTasks = async (req, res) => {
   try {
     const sliderTasks = await Task.find({ isSlider: true });
@@ -134,7 +127,6 @@ exports.getSliderTasks = async (req, res) => {
   }
 };
 
-// 🔁 Admin: Fetch All Tasks (not just featured)
 exports.getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find();
@@ -144,10 +136,9 @@ exports.getAllTasks = async (req, res) => {
   }
 };
 
-// 🛠 Admin: Toggle `isFeatured` or `isSlider` field
 exports.toggleTaskField = async (req, res) => {
   const { taskId } = req.params;
-  const { field } = req.body; // field = 'isFeatured' or 'isSlider'
+  const { field } = req.body; 
 
   if (!['isFeatured', 'isSlider'].includes(field)) {
     return res.status(400).json({ message: 'Invalid field to toggle' });
@@ -166,7 +157,6 @@ exports.toggleTaskField = async (req, res) => {
   }
 };
 
-// ❌ Admin: Delete a Task
 exports.deleteTaskById = async (req, res) => {
   const { taskId } = req.params;
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../utils/axios'; // ✅ updated to use central axios instance
+import axios from '../utils/axios'; 
 
 const AdminPayoutsTab = () => {
   const [users, setUsers] = useState([]);

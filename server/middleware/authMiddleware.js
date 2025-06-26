@@ -11,7 +11,6 @@ const protect = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
-    // Check for malformed token explicitly
     if (!token || token === 'null' || token === 'undefined') {
       return res.status(401).json({ message: 'Invalid token format' });
     }

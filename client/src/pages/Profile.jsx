@@ -39,7 +39,7 @@ export default function Profile() {
 
   useEffect(() => {
     fetchUser();
-    const interval = setInterval(fetchUser, 10000); // live refresh every 10 seconds
+    const interval = setInterval(fetchUser, 10000); 
     return () => clearInterval(interval);
   }, [navigate]);
 
@@ -69,7 +69,7 @@ export default function Profile() {
       </div>
 
       <div className="bg-black min-h-screen text-white p-6">
-        {/* Back Button */}
+     
         <button
           onClick={() => navigate(-1)}
           className="text-white flex items-center gap-2 mb-6 hover:text-yellow-400"
@@ -78,7 +78,7 @@ export default function Profile() {
         </button>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Left Column: Profile Card */}
+     
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl shadow-md text-center">
             <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold mb-4 border-4 border-blue-400 shadow-lg mx-auto">
               {user.name?.charAt(0).toUpperCase()}
@@ -93,7 +93,7 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Right Column: Quick Actions */}
+ 
           <div className="md:col-span-2 space-y-4">
             <div className="bg-gray-800 p-6 rounded-2xl shadow space-y-4">
               <h3 className="text-lg font-bold mb-2">Quick Actions</h3>

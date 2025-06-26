@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 
 export default function Accounts() {
-  const [method, setMethod] = useState('upi'); // 'upi' or 'bank'
+  const [method, setMethod] = useState('upi');
   const [editMode, setEditMode] = useState(false);
   const [upiId, setUpiId] = useState('');
   const [bank, setBank] = useState({ accountNumber: '', ifsc: '', holderName: '' });
@@ -90,7 +90,7 @@ export default function Accounts() {
           <FaMoneyCheckAlt /> Add Payout Method
         </h2>
 
-        {/* Tabs */}
+   
         <div className="flex gap-4 mb-6">
           <button
             className={`px-4 py-2 rounded ${method === 'upi' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-200'}`}
@@ -106,7 +106,7 @@ export default function Accounts() {
           </button>
         </div>
 
-        {/* Edit Form */}
+       
         {editMode ? (
           <div className="space-y-4 max-w-md">
             {method === 'upi' ? (
