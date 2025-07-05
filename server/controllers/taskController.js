@@ -97,16 +97,41 @@ exports.updateTaskStatus = async (req, res) => {
 };
 
 
+const path = require('path');
+
 exports.createTask = async (req, res) => {
   try {
-    const newTask = await Task.create(req.body);
+    const {
+      title,
+      description,
+      reward,
+      category,
+      packageName,
+      link
+    } = req.body;
+
+    let bannerPath = '';
+    if (req.file) {
+      bannerPath = '/uploads/' + req.file.filename;
+    }
+
+    const newTask = new Task({
+      title,
+      description,
+      reward,
+      category,
+      packageName,
+      link,
+      banner: bannerPath
+    });
+
+    await newTask.save();
     res.status(201).json({ message: "Task created", task: newTask });
   } catch (err) {
     console.error("Create task error:", err.message);
     res.status(500).json({ message: "Failed to create task", error: err.message });
   }
 };
-
 
 
 exports.getTasks = async (req, res) => {
@@ -170,12 +195,23 @@ exports.deleteTaskById = async (req, res) => {
   }
 };
 
-
 exports.updateTaskById = async (req, res) => {
   try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.taskId, req.body, { new: true });
+    const updatedFields = { ...req.body };
+
+    if (req.file) {
+      updatedFields.banner = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.params.taskId,
+      updatedFields,
+      { new: true }
+    );
+
     res.status(200).json(updatedTask);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update task', error: err.message });
   }
 };
+

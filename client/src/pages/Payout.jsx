@@ -5,10 +5,11 @@ import Navbar from '../components/Navbar';
 import axios from '../utils/axios';
 
 export default function Payout() {
-  const [method, setMethod] = useState('upi'); 
+  const [method, setMethod] = useState('upi');
   const [amount, setAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [bank, setBank] = useState({ holderName: '', accountNumber: '', ifsc: '' });
+  const [userPoints, setUserPoints] = useState(0);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const navigate = useNavigate();
@@ -16,11 +17,10 @@ export default function Payout() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get('/user/profile', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await axios.get('/user/profile');
         setUpiId(res.data.upiId || '');
         setBank(res.data.bank || { holderName: '', accountNumber: '', ifsc: '' });
+        setUserPoints(res.data.points || 0);
       } catch (err) {
         console.error("Failed to load profile:", err.message);
       }
@@ -28,46 +28,56 @@ export default function Payout() {
     fetch();
   }, []);
 
-const handleSubmit = async () => {
-  if (!amount || isNaN(amount) || Number(amount) <= 0) {
-    return alert('Please enter a valid payout amount.');
-  }
+  const handleSubmit = async () => {
+    const numericAmount = Number(amount);
+    setStatus('');
 
-  setLoading(true);
-  setStatus('');
-
-  try {
-
-    const profileRes = await axios.get('/user/profile', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-
-    if (!profileRes.data.phone || profileRes.data.phoneVerified !== true) {
-    
-      navigate('/verify-phone');
-      return;
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
+      return setStatus('Error: Please enter a valid payout amount.');
     }
 
+    if (numericAmount < 100) {
+      return setStatus('Error: Minimum payout amount is ₹100.');
+    }
 
-    const payload = {
-      method,
-      amount,
-      ...(method === 'upi' ? { upiId } : { bank })
-    };
+    if (numericAmount > userPoints) {
+      return setStatus(`Error: You only have ₹${userPoints} in your wallet.`);
+    }
 
+    if (method === 'upi' && (!upiId || upiId.trim() === '')) {
+      return setStatus('Error: UPI ID is required.');
+    }
 
-    const res = await axios.post('/payout', payload, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
+    if (method === 'bank') {
+      if (
+        !bank.holderName.trim() ||
+        !bank.accountNumber.trim() ||
+        !bank.ifsc.trim()
+      ) {
+        return setStatus('Error: All bank details are required.');
+      }
+    }
 
-    setStatus(res.data.message || '✅ Payout requested successfully!');
-  } catch (err) {
-    setStatus('❌ Failed to request payout. Try again later.');
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
 
+    try {
+      const payload = {
+        method,
+        amount: numericAmount,
+        ...(method === 'upi' ? { upiId } : { bank }),
+      };
+
+      const res = await axios.post('/payout', payload);
+      setStatus(res.data.message || 'Payout request sent!');
+      setAmount('');
+
+      setTimeout(() => navigate('/wallet'), 100);
+    } catch (err) {
+      setStatus(err.response?.data?.message || 'Error submitting payout.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -77,9 +87,7 @@ const handleSubmit = async () => {
       </div>
 
       <div className="bg-black min-h-screen p-6 flex justify-center items-center">
-
-     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-xl w-full max-w-xl">
-      
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-xl w-full max-w-xl">
           <button
             onClick={() => navigate(-1)}
             className="text-white flex items-center gap-2 mb-6 hover:text-yellow-400"
@@ -87,9 +95,12 @@ const handleSubmit = async () => {
             <FaArrowLeft /> Back
           </button>
 
-          <h2 className="text-2xl font-bold mb-6 text-center">💸 Request Payout</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">💸 Request Payout</h2>
 
-  
+          <p className="text-center text-sm text-gray-400 mb-6">
+            Available Balance: <span className="text-green-400 font-semibold">₹{userPoints}</span>
+          </p>
+
           <div className="flex gap-4 mb-6 justify-center">
             <button
               onClick={() => setMethod('upi')}
@@ -105,65 +116,49 @@ const handleSubmit = async () => {
                 method === 'bank' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
               }`}
             >
-              Bank Account
+              Bank
             </button>
           </div>
 
-        
-          <div className="mb-4">
-            <label className="block text-sm text-gray-400 mb-1">Amount (₹)</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              className="w-full p-3 bg-gray-800 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Amount (₹)"
+            className="w-full p-3 bg-gray-800 rounded text-white mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
 
           {method === 'upi' ? (
-            <div className="mb-6">
-              <label className="block text-sm text-gray-400 mb-1">UPI ID</label>
-              <input
-                type="text"
-                value={upiId}
-                onChange={(e) => setUpiId(e.target.value)}
-                placeholder="e.g., you@bank"
-                className="w-full p-3 bg-gray-800 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <input
+              type="text"
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              placeholder="e.g. yogesh@upi"
+              className="w-full p-3 bg-gray-800 rounded text-white mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
           ) : (
             <>
-              <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-1">Account Holder Name</label>
-                <input
-                  type="text"
-                  value={bank.holderName}
-                  onChange={(e) => setBank({ ...bank, holderName: e.target.value })}
-                  placeholder="e.g., Rahul Sharma"
-                  className="w-full p-3 bg-gray-800 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-1">Account Number</label>
-                <input
-                  type="text"
-                  value={bank.accountNumber}
-                  onChange={(e) => setBank({ ...bank, accountNumber: e.target.value })}
-                  placeholder="e.g., 1234567890"
-                  className="w-full p-3 bg-gray-800 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm text-gray-400 mb-1">IFSC Code</label>
-                <input
-                  type="text"
-                  value={bank.ifsc}
-                  onChange={(e) => setBank({ ...bank, ifsc: e.target.value })}
-                  placeholder="e.g., SBIN0001234"
-                  className="w-full p-3 bg-gray-800 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <input
+                type="text"
+                value={bank.holderName}
+                onChange={(e) => setBank({ ...bank, holderName: e.target.value })}
+                placeholder="Account Holder Name"
+                className="w-full p-3 bg-gray-800 rounded text-white mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
+              <input
+                type="text"
+                value={bank.accountNumber}
+                onChange={(e) => setBank({ ...bank, accountNumber: e.target.value })}
+                placeholder="Account Number"
+                className="w-full p-3 bg-gray-800 rounded text-white mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
+              <input
+                type="text"
+                value={bank.ifsc}
+                onChange={(e) => setBank({ ...bank, ifsc: e.target.value })}
+                placeholder="IFSC Code"
+                className="w-full p-3 bg-gray-800 rounded text-white mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              />
             </>
           )}
 
@@ -172,13 +167,13 @@ const handleSubmit = async () => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold transition disabled:opacity-50"
           >
-            {loading ? 'Processing...' : 'Submit Payout Request'}
+            {loading ? 'Processing...' : 'Submit Request'}
           </button>
 
           {status && (
             <p
               className={`mt-4 text-center font-medium ${
-                status.startsWith('✅') ? 'text-green-400' : 'text-red-400'
+                status.startsWith('Error') ? 'text-red-400' : 'text-green-400'
               }`}
             >
               {status}

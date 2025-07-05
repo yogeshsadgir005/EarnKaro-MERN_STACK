@@ -1,87 +1,107 @@
-const cashfree = require('../utils/cashfree');
 const Payout = require('../models/Payout');
+const User = require('../models/User');
 
 exports.submitPayout = async (req, res) => {
-  const { amount, utr, method, upiId, account_number, ifsc, name } = req.body;
+  const { amount, method, upiId, bank } = req.body;
   const userId = req.user._id;
-  const email = req.user.email || 'user@example.com';
 
   try {
-    const benePayload =
-      method === 'upi'
-        ? {
-            beneId: userId.toString(),
-            name,
-            email,
-            phone: '9999999999',
-            upi: upiId
-          }
-        : {
-            beneId: userId.toString(),
-            name,
-            email,
-            phone: '9999999999',
-            bankAccount: account_number,
-            ifsc
-          };
-
-    const beneResponse = await cashfree.post('/payout/v1/addBeneficiary', benePayload);
-    console.log('✅ Beneficiary Added:', beneResponse.data);
-
-    const transfer = await cashfree.post('/payout/v1/requestTransfer', {
-      beneId: userId.toString(),
-      amount: parseInt(amount),
-      transferId: utr,
-      transferMode: method === 'upi' ? 'upi' : 'imps',
-      remarks: 'SkillMint Payout'
-    });
-
-    console.log('📦 Transfer Response:', transfer.data);
-
-    if (transfer.data.status === 'ERROR') {
-      return res.status(400).json({
-        message: '❌ Payout Error',
-        status: transfer.data.status,
-        subCode: transfer.data.subCode,
-        reason: transfer.data.message || transfer.data.reason
-      });
+    if (!amount || amount <= 0 || !method) {
+      return res.status(400).json({ message: 'Amount and method are required' });
     }
 
-    await Payout.create({
+    if (method === 'upi' && !upiId) {
+      return res.status(400).json({ message: 'UPI ID is required' });
+    }
+
+    if (
+      method === 'bank' &&
+      (!bank || !bank.holderName || !bank.accountNumber || !bank.ifsc)
+    ) {
+      return res.status(400).json({ message: 'Bank details incomplete' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (user.points < amount) {
+      return res.status(400).json({ message: 'Insufficient wallet balance' });
+    }
+
+
+    user.points -= amount;
+    await user.save();
+
+    const payout = await Payout.create({
       user: userId,
       amount,
-      utr,
+      deducted: true, 
       method,
-      status: transfer.data.status,
-      referenceId: transfer.data.referenceId || '',
+      upiId: method === 'upi' ? upiId : undefined,
+      bank: method === 'bank' ? bank : undefined,
+      status: 'pending',
     });
 
-    res.json({
-      message: '✅ Payout Initiated',
-      status: transfer.data.status,
-      referenceId: transfer.data.referenceId
-    });
-
+    res
+      .status(200)
+      .json({ message: 'Payout request submitted successfully!', payoutId: payout._id });
   } catch (err) {
-    console.error('❌ Cashfree Error:', err.response?.data || err.message);
-    res.status(500).json({
-      message: '❌ Payout failed',
-      error: err.response?.data || err.message
-    });
+    console.error('Error submitting payout request:', err);
+    res.status(500).json({ message: 'Server error submitting payout' });
   }
 };
 
-exports.checkPayoutStatus = async (req, res) => {
-  const { utr } = req.params;
+exports.updatePayoutStatus = async (req, res) => {
+  const { payoutId, newStatus } = req.body;
+
+  if (!['completed', 'failed'].includes(newStatus)) {
+    return res.status(400).json({ message: 'Invalid status update' });
+  }
 
   try {
-    const response = await cashfree.get(`/payout/v1/getTransferStatus?transferId=${utr}`);
-    res.json(response.data);
+    const payout = await Payout.findById(payoutId).populate('user');
+    if (!payout) return res.status(404).json({ message: 'Payout not found' });
+
+    const user = payout.user;
+
+    if (newStatus === 'failed' && payout.deducted) {
+ 
+      user.points += payout.amount;
+      await user.save();
+
+      payout.deducted = false; 
+    }
+
+    payout.status = newStatus;
+    await payout.save();
+
+    res.json({ message: `Payout marked as ${newStatus}` });
   } catch (err) {
-    console.error('❌ Payout Status Error:', err.response?.data || err.message);
-    res.status(500).json({
-      message: 'Failed to check status',
-      error: err.response?.data || err.message
-    });
+    console.error('Error updating payout status:', err);
+    res.status(500).json({ message: 'Failed to update payout status' });
   }
 };
+
+exports.getAllPayoutRequests = async (req, res) => {
+  try {
+    const payouts = await Payout.find()
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+    res.json(payouts);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch payout requests' });
+  }
+};
+
+exports.getUserPayoutHistory = async (req, res) => {
+  try {
+    const payouts = await Payout.find({
+      user: req.user._id,
+      status: { $in: ['pending', 'completed', 'failed'] },
+    }).sort({ createdAt: -1 });
+    res.json(payouts);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch history' });
+  }
+};
+

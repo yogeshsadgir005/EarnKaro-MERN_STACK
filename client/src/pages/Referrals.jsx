@@ -31,11 +31,11 @@ const Referrals = () => {
   }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(referralCode);
+    navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
+const referralLink = `http://localhost:5173/signup?ref=${referralCode}`;
   const shareText = `🎉 Join SkillMint and earn real rewards! Use my referral code: ${referralCode}\n👉 https://skillmint.in`;
   const whatsappLink = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const telegramLink = `https://t.me/share/url?url=https://skillmint.in&text=${encodeURIComponent(shareText)}`;

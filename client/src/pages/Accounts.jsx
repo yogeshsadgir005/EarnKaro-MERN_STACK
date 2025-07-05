@@ -78,7 +78,7 @@ export default function Accounts() {
       </div>
 
       <main className="bg-black min-h-screen text-white p-6">
-        {/* Back Button */}
+
         <button
           onClick={() => navigate(-1)}
           className="mb-6 flex items-center gap-2 text-sm text-blue-400 hover:text-white"

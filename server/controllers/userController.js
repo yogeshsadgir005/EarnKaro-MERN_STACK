@@ -1,12 +1,9 @@
-
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-
 
 const getProfile = async (req, res) => {
   res.json(req.user);
 };
-
 
 const updateProfile = async (req, res) => {
   const { name, contact, upiId, bank } = req.body;
@@ -30,7 +27,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-
 const getRewards = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('rewards');
@@ -52,27 +48,28 @@ const getRewards = async (req, res) => {
   }
 };
 
-
 const getReferrals = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('referralCode referrals rewards');
-    const referralRewards = user.rewards || [];
+    const user = await User.findById(req.user.id)
+      .populate('referrals', 'name email')
+      .lean();
 
-    const referralEarnings = referralRewards
-      .filter(r => r.title.toLowerCase().includes('referral') && r.credited && r.status === 'completed')
-      .reduce((sum, r) => sum + (r.amount || 0), 0);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.status(200).json({
+    const totalReferralPoints = user.rewards
+      .filter(r => r.title.includes('Referral') && r.credited)
+      .reduce((acc, cur) => acc + cur.amount, 0);
+
+    res.json({
       referralCode: user.referralCode,
       referrals: user.referrals,
-      points: referralEarnings
+      points: totalReferralPoints,
     });
   } catch (err) {
-    console.error("Referrals Error:", err.message);
+    console.error('Referral fetch error:', err);
     res.status(500).json({ message: 'Failed to fetch referrals' });
   }
 };
-
 
 const getLeaderboard = async (req, res) => {
   const range = req.query.range || 'overall';
@@ -126,11 +123,39 @@ const getLeaderboard = async (req, res) => {
   }
 };
 
+const getStreak = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastLogin = new Date(user.lastLoginDate || 0);
+    lastLogin.setHours(0, 0, 0, 0);
+
+    const dayDiff = Math.floor((today - lastLogin) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff === 1) {
+      user.streakCount = (user.streakCount || 0) + 1;
+    } else if (dayDiff > 1) {
+      user.streakCount = 1;
+    }
+
+    user.lastLoginDate = new Date();
+    await user.save();
+
+    res.status(200).json({ streak: user.streakCount || 1 });
+  } catch (err) {
+    console.error("Streak Error:", err.message);
+    res.status(500).json({ message: 'Failed to get streak' });
+  }
+};
 
 module.exports = {
   getProfile,
   updateProfile,
   getRewards,
   getReferrals,
-  getLeaderboard
+  getLeaderboard,
+  getStreak,
 };

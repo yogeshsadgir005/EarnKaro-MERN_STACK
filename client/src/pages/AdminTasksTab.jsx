@@ -14,10 +14,14 @@ const AdminTasksTab = () => {
     reward: '',
     category: '',
     link: '',
-    banner: '',
+    banner: null,
     isFeatured: false,
     isSlider: false
   });
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalAction, setModalAction] = useState('');
+  const [targetTaskId, setTargetTaskId] = useState(null);
 
   const fetchTasks = async () => {
     try {
@@ -35,51 +39,92 @@ const AdminTasksTab = () => {
     fetchTasks();
   }, []);
 
-  const handleAddTask = async () => {
+  const confirmAction = (action, taskId = null) => {
+    setModalAction(action);
+    setTargetTaskId(taskId);
+    setShowModal(true);
+  };
+
+  const handleModalConfirm = async () => {
     try {
-      const taskToSend = { ...newTask, reward: Number(newTask.reward) || 0 };
-      await axios.post('/tasks/add', taskToSend);
+      if (modalAction === 'save') {
+        const formData = new FormData();
+        formData.append('title', editTask.title);
+        formData.append('description', editTask.description);
+        formData.append('reward', editTask.reward);
+        formData.append('category', editTask.category);
+        formData.append('link', editTask.link);
+        formData.append('isFeatured', editTask.isFeatured);
+        formData.append('isSlider', editTask.isSlider);
+
+
+        if (editTask.banner && typeof editTask.banner !== 'string') {
+          formData.append('banner', editTask.banner);
+        }
+
+        await axios.put(`/tasks/update/${editingId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        setEditingId(null);
+      } else if (modalAction === 'delete') {
+        await axios.delete(`/tasks/${targetTaskId}`);
+      } else if (modalAction === 'add') {
+        const formData = new FormData();
+        formData.append('title', newTask.title);
+        formData.append('description', newTask.description);
+        formData.append('reward', newTask.reward);
+        formData.append('category', newTask.category);
+        formData.append('link', newTask.link);
+        formData.append('isFeatured', newTask.isFeatured);
+        formData.append('isSlider', newTask.isSlider);
+        if (newTask.banner) {
+          formData.append('banner', newTask.banner);
+        }
+
+        await axios.post('/tasks/add', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        setNewTask({
+          title: '',
+          description: '',
+          reward: '',
+          category: '',
+          link: '',
+          banner: null,
+          isFeatured: false,
+          isSlider: false,
+        });
+        setShowAddForm(false);
+      }
+
       fetchTasks();
-      setNewTask({
-        title: '',
-        description: '',
-        reward: '',
-        category: '',
-        link: '',
-        banner: '',
-        isFeatured: false,
-        isSlider: false
-      });
-      setShowAddForm(false);
     } catch (err) {
-      alert('Failed to add task');
+      alert(`Failed to ${modalAction} task`);
+    } finally {
+      setShowModal(false);
     }
   };
 
-  const handleEditToggle = (task) => {
-    setEditingId(task._id);
-    setEditTask({ ...task });
-  };
 
-  const handleEditSave = async () => {
-    try {
-      await axios.put(`/tasks/update/${editingId}`, editTask);
-      fetchTasks();
-      setEditingId(null);
-    } catch (err) {
-      alert('Failed to update task');
-    }
-  };
-
-  const deleteTask = async (taskId) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
-    try {
-      await axios.delete(`/tasks/${taskId}`);
-      fetchTasks();
-    } catch (err) {
-      alert('Failed to delete task');
-    }
-  };
+  const Modal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm text-center">
+        <p className="text-lg font-semibold mb-4">
+          Are you sure you want to {modalAction === 'save' ? 'save changes' : modalAction === 'delete' ? 'delete this task' : 'add this task'}?
+        </p>
+        <div className="flex justify-center gap-4 mt-4">
+          <button onClick={handleModalConfirm} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            Yes
+          </button>
+          <button onClick={() => setShowModal(false)} className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-4">
@@ -96,7 +141,7 @@ const AdminTasksTab = () => {
         <div className="bg-white rounded-lg shadow p-6 mb-8 space-y-4">
           <h3 className="text-lg font-semibold text-gray-800">➕ Create New Task</h3>
 
-          {['title', 'description', 'link', 'banner'].map((field) => (
+          {['title', 'description', 'link'].map((field) => (
             <input
               key={field}
               className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
@@ -106,7 +151,13 @@ const AdminTasksTab = () => {
             />
           ))}
 
-    
+          <input
+            type="file"
+            className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
+            accept="image/*"
+            onChange={(e) => setNewTask({ ...newTask, banner: e.target.files[0] })}
+          />
+
           <select
             className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
             value={newTask.category}
@@ -118,7 +169,6 @@ const AdminTasksTab = () => {
             <option value="skills">Skills</option>
           </select>
 
-         
           <input
             type="number"
             className="w-full border border-gray-300 rounded px-4 py-2 text-sm"
@@ -150,7 +200,7 @@ const AdminTasksTab = () => {
 
           <button
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-            onClick={handleAddTask}
+            onClick={() => confirmAction('add')}
           >
             ✅ Save Task
           </button>
@@ -177,123 +227,41 @@ const AdminTasksTab = () => {
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr
-                  key={task._id}
-                  className={`border-t transition-all duration-300 ${
-                    editingId === task._id ? 'bg-gray-100 shadow-lg scale-[1.01]' : 'hover:bg-gray-50'
-                  }`}
-                >
+                <tr key={task._id} className={`border-t ${editingId === task._id ? 'bg-gray-100' : 'hover:bg-gray-50'}`}>
                   <td className="p-2">
                     {editingId === task._id ? (
                       <input
-                        className="w-28 border px-2 py-1"
-                        value={editTask.banner}
-                        onChange={(e) => setEditTask({ ...editTask, banner: e.target.value })}
+                        type="file"
+                        accept="image/*"
+                        className="w-full border px-2 py-1 text-sm"
+                        onChange={(e) => setEditTask({ ...editTask, banner: e.target.files[0] })}
                       />
                     ) : task.banner ? (
-                      <img src={task.banner} alt="banner" className="w-14 h-10 object-cover rounded" />
+                      <img src={`${import.meta.env.VITE_BACKEND_URL}${task.banner}`} alt="Task Banner"
+                        className="w-14 h-10 object-cover rounded"
+                      />
                     ) : (
                       '—'
                     )}
                   </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editTask.title}
-                        onChange={(e) => setEditTask({ ...editTask, title: e.target.value })}
-                      />
-                    ) : (
-                      task.title
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editTask.description}
-                        onChange={(e) => setEditTask({ ...editTask, description: e.target.value })}
-                      />
-                    ) : (
-                      task.description?.slice(0, 40) + '...'
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <select
-                        className="border px-2 py-1 rounded w-28"
-                        value={editTask.category}
-                        onChange={(e) => setEditTask({ ...editTask, category: e.target.value })}
-                      >
-                        <option value="apps">Apps</option>
-                        <option value="games">Games</option>
-                        <option value="skills">Skills</option>
-                      </select>
-                    ) : (
-                      task.category
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-32"
-                        value={editTask.link}
-                        onChange={(e) => setEditTask({ ...editTask, link: e.target.value })}
-                      />
-                    ) : (
-                      <a href={task.link} className="text-blue-600 underline" target="_blank" rel="noreferrer">
-                        Open
-                      </a>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        type="number"
-                        className="border px-2 py-1 rounded w-20"
-                        value={editTask.reward}
-                        onChange={(e) => setEditTask({ ...editTask, reward: Number(e.target.value) })}
-                      />
-                    ) : (
-                      `₹${task.reward}`
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        type="checkbox"
-                        checked={editTask.isFeatured}
-                        onChange={(e) =>
-                          setEditTask({ ...editTask, isFeatured: e.target.checked })
-                        }
-                      />
-                    ) : (
-                      task.isFeatured ? '✅' : '❌'
-                    )}
-                  </td>
-                  <td className="p-2">
-                    {editingId === task._id ? (
-                      <input
-                        type="checkbox"
-                        checked={editTask.isSlider}
-                        onChange={(e) =>
-                          setEditTask({ ...editTask, isSlider: e.target.checked })
-                        }
-                      />
-                    ) : (
-                      task.isSlider ? '✅' : '❌'
-                    )}
-                  </td>
+
+                  <td className="p-2">{editingId === task._id ? <input className="border px-2 py-1 rounded w-full" value={editTask.title} onChange={(e) => setEditTask({ ...editTask, title: e.target.value })} /> : task.title}</td>
+                  <td className="p-2">{editingId === task._id ? <input className="border px-2 py-1 rounded w-full" value={editTask.description} onChange={(e) => setEditTask({ ...editTask, description: e.target.value })} /> : task.description?.slice(0, 40) + '...'}</td>
+                  <td className="p-2">{editingId === task._id ? <select className="border px-2 py-1 rounded w-28" value={editTask.category} onChange={(e) => setEditTask({ ...editTask, category: e.target.value })}><option value="apps">Apps</option><option value="games">Games</option><option value="skills">Skills</option></select> : task.category}</td>
+                  <td className="p-2">{editingId === task._id ? <input className="border px-2 py-1 rounded w-32" value={editTask.link} onChange={(e) => setEditTask({ ...editTask, link: e.target.value })} /> : <a href={task.link} className="text-blue-600 underline" target="_blank" rel="noreferrer">Open</a>}</td>
+                  <td className="p-2">{editingId === task._id ? <input type="number" className="border px-2 py-1 rounded w-20" value={editTask.reward} onChange={(e) => setEditTask({ ...editTask, reward: Number(e.target.value) })} /> : `₹${task.reward}`}</td>
+                  <td className="p-2">{editingId === task._id ? <input type="checkbox" checked={editTask.isFeatured} onChange={(e) => setEditTask({ ...editTask, isFeatured: e.target.checked })} /> : task.isFeatured ? '✅' : '❌'}</td>
+                  <td className="p-2">{editingId === task._id ? <input type="checkbox" checked={editTask.isSlider} onChange={(e) => setEditTask({ ...editTask, isSlider: e.target.checked })} /> : task.isSlider ? '✅' : '❌'}</td>
                   <td className="space-x-2 p-2">
                     {editingId === task._id ? (
                       <>
-                        <button onClick={handleEditSave} className="text-green-600"><FaSave /></button>
+                        <button onClick={() => confirmAction('save')} className="text-green-600"><FaSave /></button>
                         <button onClick={() => setEditingId(null)} className="text-gray-600"><FaTimes /></button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => handleEditToggle(task)} className="text-yellow-600"><FaEdit /></button>
-                        <button onClick={() => deleteTask(task._id)} className="text-red-600"><FaTrash /></button>
+                        <button onClick={() => { setEditingId(task._id); setEditTask({ ...task }); }} className="text-yellow-600"><FaEdit /></button>
+                        <button onClick={() => confirmAction('delete', task._id)} className="text-red-600"><FaTrash /></button>
                       </>
                     )}
                   </td>
@@ -303,6 +271,8 @@ const AdminTasksTab = () => {
           </table>
         </div>
       )}
+
+      {showModal && <Modal />}
     </div>
   );
 };

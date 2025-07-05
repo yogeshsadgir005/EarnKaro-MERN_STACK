@@ -36,11 +36,6 @@ export default function Wallet() {
     fetchWallet();
   }, [navigate]);
 
-  const totalBalance = rewards.reduce(
-    (sum, r) => r.credited && r.status === 'completed' ? sum + r.amount : sum,
-    0
-  );
-
   return (
     <>
       <Navbar />
@@ -59,8 +54,8 @@ export default function Wallet() {
         <h2 className="text-3xl font-bold text-center">💰 My Wallet</h2>
 
         <section className="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-          <p className="text-gray-400">Total Earnings</p>
-          <h3 className="text-4xl font-extrabold text-blue-400 my-2">₹{totalBalance}</h3>
+          <p className="text-gray-400">Wallet Balance</p>
+          <h3 className="text-4xl font-extrabold text-blue-400 my-2">₹{user?.points}</h3>
           <button
             onClick={() => navigate('/payout')}
             className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded"
@@ -84,6 +79,7 @@ export default function Wallet() {
               {rewards
                 .slice()
                 .reverse()
+                .filter(r => r.type !== 'payout')
                 .map((r, i) => (
                   <div
                     key={i}

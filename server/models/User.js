@@ -5,17 +5,17 @@ const rewardSchema = new mongoose.Schema({
   amount: Number,
   status: {
     type: String,
-    enum: ['pending', 'completed','failed'],
-    default: 'completed', 
+    enum: ['pending', 'completed', 'failed'],
+    default: 'completed'
   },
   credited: {
     type: Boolean,
-    default: true, 
+    default: true
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
 const userSchema = new mongoose.Schema({
@@ -29,19 +29,20 @@ const userSchema = new mongoose.Schema({
 
   referralCode: String,
   referrals: [String],
-
   rewards: [rewardSchema],
   points: { type: Number, default: 0 },
+
+  streakCount: { type: Number, default: 0 },
+  lastLoginDate: { type: Date, default: null },
 
   bank: {
     accountHolder: String,
     accountNumber: String,
     ifsc: String,
-    bankName: String,
+    bankName: String
   },
-
   upiId: { type: String, default: '' },
-  isAdmin: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false }
 }, { timestamps: true });
 
 userSchema.pre('save', function (next) {

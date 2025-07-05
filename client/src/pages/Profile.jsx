@@ -9,6 +9,7 @@ export default function Profile() {
   const [user, setUser] = useState(null);
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); 
 
   const fetchUser = async () => {
     try {
@@ -39,12 +40,13 @@ export default function Profile() {
 
   useEffect(() => {
     fetchUser();
-    const interval = setInterval(fetchUser, 10000); 
+    const interval = setInterval(fetchUser, 10000);
     return () => clearInterval(interval);
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    setShowLogoutConfirm(false);
     navigate('/login');
   };
 
@@ -69,7 +71,6 @@ export default function Profile() {
       </div>
 
       <div className="bg-black min-h-screen text-white p-6">
-     
         <button
           onClick={() => navigate(-1)}
           className="text-white flex items-center gap-2 mb-6 hover:text-yellow-400"
@@ -78,7 +79,6 @@ export default function Profile() {
         </button>
 
         <div className="grid md:grid-cols-3 gap-8">
-     
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-2xl shadow-md text-center">
             <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold mb-4 border-4 border-blue-400 shadow-lg mx-auto">
               {user.name?.charAt(0).toUpperCase()}
@@ -88,12 +88,8 @@ export default function Profile() {
             <div className="bg-gray-700 py-2 rounded-lg mt-2">
               <p><strong>ID:</strong> {user._id}</p>
             </div>
-            <div className="bg-blue-700 py-3 rounded-lg mt-4 font-semibold text-lg">
-              Earnings: ₹{totalEarnings}.00
-            </div>
           </div>
 
- 
           <div className="md:col-span-2 space-y-4">
             <div className="bg-gray-800 p-6 rounded-2xl shadow space-y-4">
               <h3 className="text-lg font-bold mb-2">Quick Actions</h3>
@@ -124,7 +120,7 @@ export default function Profile() {
                 </button>
               </div>
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)} 
                 className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded w-full font-bold"
               >
                 🚪 Log Out
@@ -133,6 +129,29 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300">
+          <div className="bg-gray-900 text-white rounded-xl shadow-lg max-w-sm w-full p-6 mx-4 animate-fadeIn scale-100 transition-transform duration-300 transform">
+            <h3 className="text-xl font-semibold mb-2">Confirm Logout</h3>
+            <p className="text-sm text-gray-300">Are you sure you want to logout?</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-4 py-2 text-sm rounded border border-gray-600 hover:bg-gray-700 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 font-semibold transition"
+              >
+                Yes, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
