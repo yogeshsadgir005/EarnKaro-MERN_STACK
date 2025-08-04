@@ -1,7 +1,7 @@
 # EarnKaro - EarnByTask 💰
 
 ### 🔴 Live Website:
-👉 [Visit SkillMint](https://skillmint.space)
+👉 [Visit EarnKaro](https://skillmint.space)
 
 ---
 
